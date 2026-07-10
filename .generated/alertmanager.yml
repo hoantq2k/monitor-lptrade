@@ -1,0 +1,37 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: default
+  group_by:
+    - alertname
+    - job
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+
+receivers:
+  - name: default
+    telegram_configs:
+      - bot_token: 'CHANGE_ME_TELEGRAM_BOT_TOKEN'
+        chat_id: 0
+        send_resolved: true
+        parse_mode: HTML
+        message: |-
+          {{ if eq .Status "firing" }}<b>[FIRING]</b>{{ else }}<b>[RESOLVED]</b>{{ end }} {{ .CommonLabels.alertname }}
+          Severity: {{ .CommonLabels.severity }}
+          {{ range .Alerts }}
+          Instance: {{ .Labels.instance }}
+          Job: {{ .Labels.job }}
+          Summary: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          {{ end }}
+
+inhibit_rules:
+  - source_matchers:
+      - severity="critical"
+    target_matchers:
+      - severity="warning"
+    equal:
+      - alertname
+      - instance
