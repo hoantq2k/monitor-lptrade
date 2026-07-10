@@ -18,8 +18,11 @@ Sua file `.env` o thu muc goc de doi ten stack, network, image tag va retention:
 
 Ket noi PostgreSQL cho postgres_exporter nam trong bien `POSTGRES_DATA_SOURCE_NAME`.
 
-Alertmanager gui canh bao ra Telegram qua hai bien `ALERTMANAGER_TELEGRAM_BOT_TOKEN` va `ALERTMANAGER_TELEGRAM_CHAT_ID`.
-Khi deploy, script se render cau hinh Alertmanager tu `.env` ra `.generated/alertmanager.yml`.
+Alertmanager gui canh bao ra Microsoft Teams qua bien `MS_TEAMS_WEBHOOK_URL`.
+Khi deploy, script se render cau hinh Alertmanager tu `.env` ra `.generated/alertmanager.yml` va gui alert qua service `prometheus_msteams`.
+
+Prometheus dang them label `host_ip` va ghi de `nodename` cho `node_exporter` bang IP trong label `instance`, de Grafana hien thi IP host thay vi container ID.
+Voi `cadvisor`, Prometheus cung them `host_ip`, `nodename` va chuan hoa label `instance` ve IP host de dashboard cadvisor hien thi de nhin hon.
 
 Neu can mirror image ve Docker Hub rieng, sua `DOCKER_HUB_NAMESPACE` trong `.env`, dang nhap `docker login`, roi chay:
 

@@ -42,7 +42,7 @@ mirror_image() {
   fi
 
   repo_name="${source_without_registry//\//-}"
-  target_image="${DOCKER_HUB_NAMESPACE}/${repo_name}:${ }"
+  target_image="${DOCKER_HUB_NAMESPACE}/${repo_name}:${tag}"
 
   echo "Pull $source_image"
   docker pull "$source_image"
@@ -60,9 +60,10 @@ echo "Mirroring images to Docker Hub namespace: $DOCKER_HUB_NAMESPACE"
 echo
 
 echo "Generated image config:"
-mirror_image "PROMETHEUS_IMAGE" "${PROMETHEUS_IMAGE:-prom/prometheus:v2.53.1}"
-mirror_image "NODE_EXPORTER_IMAGE" "${NODE_EXPORTER_IMAGE:-prom/node-exporter:v1.8.2}"
-mirror_image "CADVISOR_IMAGE" "${CADVISOR_IMAGE:-gcr.io/cadvisor/cadvisor:v0.49.1}"
-mirror_image "ALERTMANAGER_IMAGE" "${ALERTMANAGER_IMAGE:-prom/alertmanager:v0.27.0}"
-mirror_image "BLACKBOX_EXPORTER_IMAGE" "${BLACKBOX_EXPORTER_IMAGE:-prom/blackbox-exporter:v0.25.0}"
-mirror_image "POSTGRES_EXPORTER_IMAGE" "${POSTGRES_EXPORTER_IMAGE:-prometheuscommunity/postgres-exporter:v0.15.0}"
+mirror_image "PROMETHEUS_IMAGE" "${PROMETHEUS_SOURCE_IMAGE:-prom/prometheus:latest}"
+mirror_image "NODE_EXPORTER_IMAGE" "${NODE_EXPORTER_SOURCE_IMAGE:-prom/node-exporter:latest}"
+mirror_image "CADVISOR_IMAGE" "${CADVISOR_SOURCE_IMAGE:-gcr.io/cadvisor/cadvisor:latest}"
+mirror_image "ALERTMANAGER_IMAGE" "${ALERTMANAGER_SOURCE_IMAGE:-prom/alertmanager:latest}"
+mirror_image "PROMETHEUS_MSTEAMS_IMAGE" "${PROMETHEUS_MSTEAMS_SOURCE_IMAGE:-quay.io/prometheusmsteams/prometheus-msteams:latest}"
+mirror_image "BLACKBOX_EXPORTER_IMAGE" "${BLACKBOX_EXPORTER_SOURCE_IMAGE:-prom/blackbox-exporter:latest}"
+mirror_image "POSTGRES_EXPORTER_IMAGE" "${POSTGRES_EXPORTER_SOURCE_IMAGE:-prometheuscommunity/postgres-exporter:latest}"

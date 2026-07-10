@@ -128,6 +128,27 @@ services:
         reservations:
           memory: 32M
 
+  prometheus_msteams:
+    image: ${PROMETHEUS_MSTEAMS_IMAGE:-quay.io/prometheusmsteams/prometheus-msteams:latest}
+    environment:
+      TEAMS_INCOMING_WEBHOOK_URL: ${MS_TEAMS_WEBHOOK_URL:-CHANGE_ME_MS_TEAMS_WEBHOOK_URL}
+      TEAMS_REQUEST_URI: alertmanager
+    networks:
+      - monitoring
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: "0.20"
+          memory: 128M
+        reservations:
+          memory: 32M
+
 volumes:
   prometheus_data:
   alertmanager_data:

@@ -14,13 +14,8 @@ fi
 STACK_NAME="${STACK_NAME:-${STACK_COMMON_NAME:-monitor}}"
 MONITORING_NETWORK="${MONITORING_NETWORK:-monitoring}"
 
-if [ -z "${ALERTMANAGER_TELEGRAM_BOT_TOKEN:-}" ] || [ "$ALERTMANAGER_TELEGRAM_BOT_TOKEN" = "CHANGE_ME_TELEGRAM_BOT_TOKEN" ]; then
-  echo "Please set ALERTMANAGER_TELEGRAM_BOT_TOKEN in .env before deploying Alertmanager." >&2
-  exit 1
-fi
-
-if [ -z "${ALERTMANAGER_TELEGRAM_CHAT_ID:-}" ] || [ "$ALERTMANAGER_TELEGRAM_CHAT_ID" = "0" ]; then
-  echo "Please set ALERTMANAGER_TELEGRAM_CHAT_ID in .env before deploying Alertmanager." >&2
+if [ -z "${MS_TEAMS_WEBHOOK_URL:-}" ] || [ "$MS_TEAMS_WEBHOOK_URL" = "CHANGE_ME_MS_TEAMS_WEBHOOK_URL" ]; then
+  echo "Please set MS_TEAMS_WEBHOOK_URL in .env before deploying Alertmanager." >&2
   exit 1
 fi
 
@@ -41,20 +36,9 @@ route:
 
 receivers:
   - name: default
-    telegram_configs:
-      - bot_token: '$ALERTMANAGER_TELEGRAM_BOT_TOKEN'
-        chat_id: $ALERTMANAGER_TELEGRAM_CHAT_ID
+    webhook_configs:
+      - url: 'http://prometheus_msteams:2000/alertmanager'
         send_resolved: true
-        parse_mode: HTML
-        message: |-
-          {{ if eq .Status "firing" }}<b>[FIRING]</b>{{ else }}<b>[RESOLVED]</b>{{ end }} {{ .CommonLabels.alertname }}
-          Severity: {{ .CommonLabels.severity }}
-          {{ range .Alerts }}
-          Instance: {{ .Labels.instance }}
-          Job: {{ .Labels.job }}
-          Summary: {{ .Annotations.summary }}
-          Description: {{ .Annotations.description }}
-          {{ end }}
 
 inhibit_rules:
   - source_matchers:
