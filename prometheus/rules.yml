@@ -7,8 +7,8 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: "Instance down: {{ $labels.instance }}"
-          description: "Prometheus cannot scrape {{ $labels.job }} on {{ $labels.instance }}."
+          summary: "Mất kết nối giám sát tới dịch vụ {{ $labels.job }}"
+          description: "Prometheus không thể thu thập metrics từ {{ $labels.job }} tại {{ $labels.instance }} trong hơn 2 phút. Vui lòng kiểm tra trạng thái service, kết nối mạng và máy đích."
 
       - alert: HostDiskUsageHigh
         expr: 100 - ((node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs"} * 100) / node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs"}) > 85
@@ -16,8 +16,8 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "Disk usage high: {{ $labels.instance }} {{ $labels.mountpoint }}"
-          description: "Disk usage is above 85% for more than 10 minutes."
+          summary: "Cảnh báo: Phân vùng {{ $labels.mountpoint }} trên máy {{ $labels.nodename }} đang sử dụng cao"
+          description: "Dung lượng ổ đĩa trên máy {{ $labels.nodename }} ({{ $labels.host_ip }}) tại phân vùng {{ $labels.mountpoint }} đã vượt 85% trong hơn 10 phút. Thiết bị: {{ $labels.device }}. Vui lòng kiểm tra log, dữ liệu phát sinh nhanh hoặc dung lượng còn trống."
 
       - alert: HostDiskUsageCritical
         expr: 100 - ((node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs"} * 100) / node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs"}) > 95
@@ -25,8 +25,8 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: "Disk usage critical: {{ $labels.instance }} {{ $labels.mountpoint }}"
-          description: "Disk usage is above 95%."
+          summary: "Khẩn cấp: Phân vùng {{ $labels.mountpoint }} trên máy {{ $labels.nodename }} gần đầy"
+          description: "Dung lượng ổ đĩa trên máy {{ $labels.nodename }} ({{ $labels.host_ip }}) tại phân vùng {{ $labels.mountpoint }} đã vượt 95%. Thiết bị: {{ $labels.device }}. Cần xử lý sớm để tránh ảnh hưởng dịch vụ."
 
       - alert: HostMemoryUsageHigh
         expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 90
@@ -34,5 +34,5 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "Memory usage high: {{ $labels.instance }}"
-          description: "Memory usage is above 90% for more than 10 minutes."
+          summary: "Cảnh báo: Bộ nhớ trên máy {{ $labels.nodename }} đang sử dụng cao"
+          description: "Mức sử dụng bộ nhớ trên máy {{ $labels.nodename }} ({{ $labels.host_ip }}) đã vượt 90% trong hơn 10 phút. Vui lòng kiểm tra các tiến trình đang chiếm nhiều RAM."

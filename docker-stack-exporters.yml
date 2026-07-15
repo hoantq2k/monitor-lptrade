@@ -20,6 +20,7 @@ services:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus"
       - "--storage.tsdb.retention.time=${PROMETHEUS_RETENTION_TIME:-15d}"
+      - "--web.external-url=${PROMETHEUS_EXTERNAL_URL:-http://prometheus:9090}"
       - "--web.enable-lifecycle"
     configs:
       - source: prometheus_config
@@ -28,6 +29,7 @@ services:
         target: /etc/prometheus/rules.yml
     volumes:
       - prometheus_data:/prometheus
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
     ports:
       - target: 9090
         published: 9090

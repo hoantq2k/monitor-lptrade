@@ -17,6 +17,7 @@ Sua file `.env` o thu muc goc de doi ten stack, network, image tag va retention:
 ```
 
 Ket noi PostgreSQL cho postgres_exporter nam trong bien `POSTGRES_DATA_SOURCE_NAME`.
+Prometheus dung bien `PROMETHEUS_EXTERNAL_URL` de tao link quay lai UI trong alert; hay dat gia tri nay thanh URL/IP ma nguoi dung thuc su truy cap duoc.
 
 Alertmanager gui canh bao ra Microsoft Teams qua bien `MS_TEAMS_WEBHOOK_URL`.
 Khi deploy, script se render cau hinh Alertmanager tu `.env` ra `.generated/alertmanager.yml` va gui alert qua service `prometheus_msteams`.
