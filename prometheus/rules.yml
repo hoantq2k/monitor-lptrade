@@ -16,7 +16,7 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "Cảnh báo: Phân vùng {{ $labels.mountpoint }} trên máy {{ $labels.nodename }} đang sử dụng cao"
+          summary: "Cảnh báo: phân vùng {{ $labels.mountpoint }} trên máy {{ $labels.nodename }} đang sử dụng cao"
           description: "Dung lượng ổ đĩa trên máy {{ $labels.nodename }} ({{ $labels.host_ip }}) tại phân vùng {{ $labels.mountpoint }} đã vượt 85% trong hơn 10 phút. Thiết bị: {{ $labels.device }}. Vui lòng kiểm tra log, dữ liệu phát sinh nhanh hoặc dung lượng còn trống."
 
       - alert: HostDiskUsageCritical
@@ -25,7 +25,7 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: "Khẩn cấp: Phân vùng {{ $labels.mountpoint }} trên máy {{ $labels.nodename }} gần đầy"
+          summary: "Khẩn cấp: phân vùng {{ $labels.mountpoint }} trên máy {{ $labels.nodename }} gần đầy"
           description: "Dung lượng ổ đĩa trên máy {{ $labels.nodename }} ({{ $labels.host_ip }}) tại phân vùng {{ $labels.mountpoint }} đã vượt 95%. Thiết bị: {{ $labels.device }}. Cần xử lý sớm để tránh ảnh hưởng dịch vụ."
 
       - alert: HostMemoryUsageHigh
@@ -34,5 +34,77 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "Cảnh báo: Bộ nhớ trên máy {{ $labels.nodename }} đang sử dụng cao"
+          summary: "Cảnh báo: bộ nhớ trên máy {{ $labels.nodename }} đang sử dụng cao"
           description: "Mức sử dụng bộ nhớ trên máy {{ $labels.nodename }} ({{ $labels.host_ip }}) đã vượt 90% trong hơn 10 phút. Vui lòng kiểm tra các tiến trình đang chiếm nhiều RAM."
+
+      - alert: BlackboxProbeFailed
+        expr: probe_success == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Mất kết nối tới điểm giám sát {{ $labels.job }}"
+          description: "Blackbox exporter không thể kiểm tra thành công đích {{ $labels.instance }} trong hơn 2 phút. Vui lòng kiểm tra dịch vụ, cổng mạng hoặc định tuyến giữa stack monitoring và stack tools."
+
+      - alert: PostgreSQLExporterMatKetNoiDatabase
+        expr: pg_up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL không phản hồi qua exporter"
+          description: "postgres_exporter đang không thể kết nối tới PostgreSQL để lấy metrics. Vui lòng kiểm tra dịch vụ tools_postgresql, tài khoản giám sát và chuỗi kết nối POSTGRES_DATA_SOURCE_NAME."
+
+      - alert: RedisKhongPhanHoi
+        expr: redis_up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis {{ $labels.redis_role }} không phản hồi"
+          description: "redis_exporter không thể lấy metrics từ Redis {{ $labels.redis_role }} trong hơn 2 phút. Vui lòng kiểm tra dịch vụ Redis tương ứng, kết nối mạng và cấu hình xác thực nếu có."
+
+      - alert: RabbitMQMatMetrics
+        expr: up{job="rabbitmq"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "RabbitMQ không xuất được metrics Prometheus"
+          description: "Prometheus không scrape được metrics RabbitMQ trên cổng 15692 trong hơn 2 phút. Vui lòng kiểm tra plugin rabbitmq_prometheus và kết nối mạng trên stack tools."
+
+      - alert: ContainerCpuUsageHigh
+        expr: sum by (container_label_com_docker_swarm_service_name, instance, nodename, host_ip) (rate(container_cpu_usage_seconds_total{job="cadvisor", container_label_com_docker_swarm_service_name!="", image!="", container_label_com_docker_swarm_service_name!~".*_(prometheus|alertmanager|cadvisor|node_exporter|blackbox_exporter|postgres_exporter|redis_exporter|prometheus_msteams)$"}[5m])) > 0.9
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Cảnh báo: service {{ $labels.container_label_com_docker_swarm_service_name }} đang dùng CPU cao"
+          description: "Service {{ $labels.container_label_com_docker_swarm_service_name }} trên máy {{ $labels.nodename }} ({{ $labels.host_ip }}) đang sử dụng trung bình hơn 0.9 core CPU trong 10 phút. Vui lòng kiểm tra workload, log và giới hạn tài nguyên của container."
+
+      - alert: ContainerMemoryUsageHigh
+        expr: (max by (container_label_com_docker_swarm_service_name, instance, nodename, host_ip) (container_memory_working_set_bytes{job="cadvisor", container_label_com_docker_swarm_service_name!="", image!="", container_label_com_docker_swarm_service_name!~".*_(prometheus|alertmanager|cadvisor|node_exporter|blackbox_exporter|postgres_exporter|redis_exporter|prometheus_msteams)$"}) / max by (container_label_com_docker_swarm_service_name, instance, nodename, host_ip) (container_spec_memory_limit_bytes{job="cadvisor", container_label_com_docker_swarm_service_name!="", image!="", container_spec_memory_limit_bytes>0, container_label_com_docker_swarm_service_name!~".*_(prometheus|alertmanager|cadvisor|node_exporter|blackbox_exporter|postgres_exporter|redis_exporter|prometheus_msteams)$"})) * 100 > 85
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Cảnh báo: service {{ $labels.container_label_com_docker_swarm_service_name }} đang dùng RAM cao"
+          description: "Service {{ $labels.container_label_com_docker_swarm_service_name }} trên máy {{ $labels.nodename }} ({{ $labels.host_ip }}) đã vượt 85% giới hạn memory trong hơn 10 phút. Alert này chỉ áp dụng với container có memory limit."
+
+      - alert: ContainerNetworkErrors
+        expr: sum by (container_label_com_docker_swarm_service_name, instance, nodename, host_ip) (increase(container_network_receive_errors_total{job="cadvisor", container_label_com_docker_swarm_service_name!="", image!="", container_label_com_docker_swarm_service_name!~".*_(prometheus|alertmanager|cadvisor|node_exporter|blackbox_exporter|postgres_exporter|redis_exporter|prometheus_msteams)$"}[5m]) + increase(container_network_transmit_errors_total{job="cadvisor", container_label_com_docker_swarm_service_name!="", image!="", container_label_com_docker_swarm_service_name!~".*_(prometheus|alertmanager|cadvisor|node_exporter|blackbox_exporter|postgres_exporter|redis_exporter|prometheus_msteams)$"}[5m])) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Cảnh báo: service {{ $labels.container_label_com_docker_swarm_service_name }} có lỗi mạng"
+          description: "cAdvisor ghi nhận service {{ $labels.container_label_com_docker_swarm_service_name }} trên máy {{ $labels.nodename }} ({{ $labels.host_ip }}) phát sinh receive/transmit errors trong 5 phút gần đây. Vui lòng kiểm tra kết nối overlay network và log ứng dụng."
+
+      - alert: ContainerRestartFrequently
+        expr: sum by (container_label_com_docker_swarm_service_name, instance, nodename, host_ip) (changes(container_start_time_seconds{job="cadvisor", container_label_com_docker_swarm_service_name!="", image!="", container_label_com_docker_swarm_service_name!~".*_(prometheus|alertmanager|cadvisor|node_exporter|blackbox_exporter|postgres_exporter|redis_exporter|prometheus_msteams)$"}[15m])) > 1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Nghiêm trọng: service {{ $labels.container_label_com_docker_swarm_service_name }} đang restart bất thường"
+          description: "Service {{ $labels.container_label_com_docker_swarm_service_name }} trên máy {{ $labels.nodename }} ({{ $labels.host_ip }}) đã bị restart hoặc recreate hơn 1 lần trong 15 phút. Vui lòng kiểm tra healthcheck, crash loop, image và cấu hình runtime."

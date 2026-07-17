@@ -67,3 +67,4 @@ mirror_image "ALERTMANAGER_IMAGE" "${ALERTMANAGER_SOURCE_IMAGE:-prom/alertmanage
 mirror_image "PROMETHEUS_MSTEAMS_IMAGE" "${PROMETHEUS_MSTEAMS_SOURCE_IMAGE:-quay.io/prometheusmsteams/prometheus-msteams:latest}"
 mirror_image "BLACKBOX_EXPORTER_IMAGE" "${BLACKBOX_EXPORTER_SOURCE_IMAGE:-prom/blackbox-exporter:latest}"
 mirror_image "POSTGRES_EXPORTER_IMAGE" "${POSTGRES_EXPORTER_SOURCE_IMAGE:-prometheuscommunity/postgres-exporter:latest}"
+mirror_image "REDIS_EXPORTER_IMAGE" "${REDIS_EXPORTER_SOURCE_IMAGE:-oliver006/redis_exporter:latest}"

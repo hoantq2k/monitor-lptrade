@@ -13,6 +13,7 @@ fi
 
 STACK_NAME="${STACK_NAME:-${STACK_COMMON_NAME:-monitor}}"
 MONITORING_NETWORK="${MONITORING_NETWORK:-monitoring}"
+TOOLS_NETWORK="${TOOLS_NETWORK:-nw_dmz}"
 
 if [ -z "${MS_TEAMS_WEBHOOK_URL:-}" ] || [ "$MS_TEAMS_WEBHOOK_URL" = "CHANGE_ME_MS_TEAMS_WEBHOOK_URL" ]; then
   echo "Please set MS_TEAMS_WEBHOOK_URL in .env before deploying Alertmanager." >&2
@@ -52,6 +53,11 @@ EOF
 
 docker network inspect "$MONITORING_NETWORK" >/dev/null 2>&1 || \
   docker network create --driver overlay --attachable "$MONITORING_NETWORK"
+
+if ! docker network inspect "$TOOLS_NETWORK" >/dev/null 2>&1; then
+  echo "Required tools network '$TOOLS_NETWORK' was not found. Please create it or deploy the tools stack first." >&2
+  exit 1
+fi
 
 docker stack deploy \
   --with-registry-auth \

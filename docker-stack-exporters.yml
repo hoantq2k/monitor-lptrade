@@ -4,6 +4,9 @@ networks:
   monitoring:
     name: ${MONITORING_NETWORK:-monitoring}
     external: true
+  tools_dmz:
+    name: ${TOOLS_NETWORK:-nw_dmz}
+    external: true
 
 configs:
   prometheus_config:
@@ -12,6 +15,8 @@ configs:
     file: ./prometheus/rules.yml
   alertmanager_config:
     file: ./.generated/alertmanager.yml
+  blackbox_config:
+    file: ./blackbox/blackbox.yml
 
 services:
   prometheus:
@@ -37,6 +42,7 @@ services:
         mode: ingress
     networks:
       - monitoring
+      - tools_dmz
     deploy:
       replicas: 1
       restart_policy:
@@ -144,6 +150,135 @@ services:
       placement:
         constraints:
           - node.role == manager
+      resources:
+        limits:
+          cpus: "0.20"
+          memory: 128M
+        reservations:
+          memory: 32M
+
+  postgres_exporter:
+    image: ${POSTGRES_EXPORTER_IMAGE:-prometheuscommunity/postgres-exporter:latest}
+    environment:
+      DATA_SOURCE_NAME: ${POSTGRES_DATA_SOURCE_NAME:?POSTGRES_DATA_SOURCE_NAME is required}
+    networks:
+      - monitoring
+      - tools_dmz
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      resources:
+        limits:
+          cpus: "0.20"
+          memory: 128M
+        reservations:
+          memory: 32M
+
+  blackbox_exporter:
+    image: ${BLACKBOX_EXPORTER_IMAGE:-prom/blackbox-exporter:latest}
+    command:
+      - "--config.file=/etc/blackbox_exporter/config.yml"
+    configs:
+      - source: blackbox_config
+        target: /etc/blackbox_exporter/config.yml
+    networks:
+      - monitoring
+      - tools_dmz
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      resources:
+        limits:
+          cpus: "0.20"
+          memory: 128M
+        reservations:
+          memory: 32M
+
+  redis_exporter_master:
+    image: ${REDIS_EXPORTER_IMAGE:-oliver006/redis_exporter:latest}
+    command:
+      - "--redis.addr=redis://${TOOLS_STACK_NAME:-tools}_cache-redis-master:6379"
+    networks:
+      - monitoring
+      - tools_dmz
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      resources:
+        limits:
+          cpus: "0.20"
+          memory: 128M
+        reservations:
+          memory: 32M
+
+  redis_exporter_slave:
+    image: ${REDIS_EXPORTER_IMAGE:-oliver006/redis_exporter:latest}
+    command:
+      - "--redis.addr=redis://${TOOLS_STACK_NAME:-tools}_cache-redis-slave:6379"
+    networks:
+      - monitoring
+      - tools_dmz
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      resources:
+        limits:
+          cpus: "0.20"
+          memory: 128M
+        reservations:
+          memory: 32M
+
+  redis_exporter_socket:
+    image: ${REDIS_EXPORTER_IMAGE:-oliver006/redis_exporter:latest}
+    command:
+      - "--redis.addr=redis://${TOOLS_STACK_NAME:-tools}_cache-redis-socket:6379"
+    networks:
+      - monitoring
+      - tools_dmz
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      resources:
+        limits:
+          cpus: "0.20"
+          memory: 128M
+        reservations:
+          memory: 32M
+
+  redis_exporter_market:
+    image: ${REDIS_EXPORTER_IMAGE:-oliver006/redis_exporter:latest}
+    command:
+      - "--redis.addr=redis://${TOOLS_STACK_NAME:-tools}_cache-redis-market:6379"
+    networks:
+      - monitoring
+      - tools_dmz
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      resources:
+        limits:
+          cpus: "0.20"
+          memory: 128M
+        reservations:
+          memory: 32M
+
+  redis_exporter_pubsub:
+    image: ${REDIS_EXPORTER_IMAGE:-oliver006/redis_exporter:latest}
+    command:
+      - "--redis.addr=redis://${TOOLS_STACK_NAME:-tools}_cache-redis-pubsub:6379"
+    networks:
+      - monitoring
+      - tools_dmz
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
       resources:
         limits:
           cpus: "0.20"
