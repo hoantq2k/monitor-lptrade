@@ -28,7 +28,7 @@ Khi deploy, script se render cau hinh Alertmanager tu `.env` ra `.generated/aler
 Prometheus dang them label `host_ip` va ghi de `nodename` cho `node_exporter` bang IP trong label `instance`, de Grafana hien thi IP host thay vi container ID.
 Voi `cadvisor`, Prometheus cung them `host_ip`, `nodename` va chuan hoa label `instance` ve IP host de dashboard cadvisor hien thi de nhin hon.
 Blackbox exporter dang probe TCP cho HAProxy, PostgreSQL, RabbitMQ va Redis tren stack `tools`.
-RabbitMQ duoc monitor theo hai lop: Blackbox probe kiem tra TCP port `5672`, con Prometheus scrape native `rabbitmq_prometheus` plugin tai `tools_rabbitmq:15692/metrics` de lay queue, consumer, ready va unacknowledged messages. Dashboard chi tiet nam tai `grafana/dashboards/rabbitmq-overview.json`; khong can them container rabbitmq_exporter rieng neu plugin native da duoc bat.
+RabbitMQ duoc monitor theo hai lop cho ca `rabbitmq-seed` va `rabbitmq`: Blackbox probe kiem tra TCP port `5672`, con Prometheus scrape native `rabbitmq_prometheus` plugin tai port noi bo `15692` de lay queue, consumer, ready va unacknowledged messages. Dashboard chi tiet nam tai `grafana/dashboards/rabbitmq-overview.json`; khong can them container rabbitmq_exporter rieng neu plugin native da duoc bat.
 RabbitMQ native plugin can duoc bat tren RabbitMQ tools stack:
 
 ```bash
@@ -37,7 +37,21 @@ rabbitmq-plugins enable rabbitmq_prometheus
 
 Redis duoc scrape thong qua cac service `redis_exporter_*` cho `master`, `slave`, `socket`, `market` va `pubsub`.
 
-Dashboard Grafana noi bo nam tai `grafana/dashboards/swarm-monitoring-overview.json`. Dashboard nay dung dung naming contract cua stack: `service_name` cho ten service Swarm, `container_label_com_docker_swarm_service_name` va `container_label_com_docker_swarm_task_name` cho cAdvisor, `nodename`/`host_ip` cho host, `redis_role` cho Redis va `target` cho blackbox probe. Khong doi cac label nay thanh ten gia dinh cua dashboard public.
+Grafana chay tren may rieng, khong duoc deploy trong Docker Stack nay. Monitoring stack chi cung cap metrics qua Prometheus; dashboard can duoc import truc tiep tai Grafana.
+
+Khi cau hinh datasource tren Grafana, su dung URL Prometheus ma may Grafana truy cap duoc, vi du:
+
+```text
+http://<prometheus-host>:9090
+```
+
+Import dashboard cong dong sau khi kiem tra query, job name, label va datasource voi Prometheus thuc te:
+- [Node Exporter Full - ID 1860](https://grafana.com/grafana/dashboards/1860-node-exporter-full/) cho CPU, RAM, disk va network host; dashboard nay thuong can doi selector neu khong dung `job=node`.
+- [PostgreSQL Database - ID 9628](https://grafana.com/grafana/dashboards/9628-postgresql-database/) cho postgres_exporter.
+- [RabbitMQ Overview - ID 10991](https://grafana.com/grafana/dashboards/10991-rabbitmq-overview/) cho native `rabbitmq_prometheus`.
+- [Prometheus 2.0 Overview - ID 3662](https://grafana.com/grafana/dashboards/3662-prometheus-2-0-overview/) de theo doi chinh Prometheus.
+
+Khong import hang loat dashboard cong dong vao production truoc khi kiem tra query, job name, label va datasource. Cac dashboard nay khong nam trong repository va khong duoc stack tu dong provision.
 
 Neu can mirror image ve Docker Hub rieng, sua `DOCKER_HUB_NAMESPACE` trong `.env`, dang nhap `docker login`, roi chay:
 
