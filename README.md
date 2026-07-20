@@ -28,8 +28,16 @@ Khi deploy, script se render cau hinh Alertmanager tu `.env` ra `.generated/aler
 Prometheus dang them label `host_ip` va ghi de `nodename` cho `node_exporter` bang IP trong label `instance`, de Grafana hien thi IP host thay vi container ID.
 Voi `cadvisor`, Prometheus cung them `host_ip`, `nodename` va chuan hoa label `instance` ve IP host de dashboard cadvisor hien thi de nhin hon.
 Blackbox exporter dang probe TCP cho HAProxy, PostgreSQL, RabbitMQ va Redis tren stack `tools`.
-RabbitMQ duoc scrape metrics truc tiep tu cong `15692`.
+RabbitMQ duoc monitor theo hai lop: Blackbox probe kiem tra TCP port `5672`, con Prometheus scrape native `rabbitmq_prometheus` plugin tai `tools_rabbitmq:15692/metrics` de lay queue, consumer, ready va unacknowledged messages. Dashboard chi tiet nam tai `grafana/dashboards/rabbitmq-overview.json`; khong can them container rabbitmq_exporter rieng neu plugin native da duoc bat.
+RabbitMQ native plugin can duoc bat tren RabbitMQ tools stack:
+
+```bash
+rabbitmq-plugins enable rabbitmq_prometheus
+```
+
 Redis duoc scrape thong qua cac service `redis_exporter_*` cho `master`, `slave`, `socket`, `market` va `pubsub`.
+
+Dashboard Grafana noi bo nam tai `grafana/dashboards/swarm-monitoring-overview.json`. Dashboard nay dung dung naming contract cua stack: `service_name` cho ten service Swarm, `container_label_com_docker_swarm_service_name` va `container_label_com_docker_swarm_task_name` cho cAdvisor, `nodename`/`host_ip` cho host, `redis_role` cho Redis va `target` cho blackbox probe. Khong doi cac label nay thanh ten gia dinh cua dashboard public.
 
 Neu can mirror image ve Docker Hub rieng, sua `DOCKER_HUB_NAMESPACE` trong `.env`, dang nhap `docker login`, roi chay:
 

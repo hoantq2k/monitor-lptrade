@@ -16,6 +16,8 @@ scrape_configs:
     static_configs:
       - targets:
           - localhost:9090
+        labels:
+          service_name: prometheus
 
   - job_name: node_exporter
     dockerswarm_sd_configs:
@@ -29,6 +31,8 @@ scrape_configs:
       - source_labels: [__meta_dockerswarm_service_name]
         regex: .+_node_exporter
         action: keep
+      - source_labels: [__meta_dockerswarm_service_name]
+        target_label: service_name
       - source_labels: [__meta_dockerswarm_node_address]
         target_label: host_ip
       - source_labels: [__meta_dockerswarm_node_hostname]
@@ -48,6 +52,8 @@ scrape_configs:
       - source_labels: [__meta_dockerswarm_service_name]
         regex: .+_cadvisor
         action: keep
+      - source_labels: [__meta_dockerswarm_service_name]
+        target_label: service_name
       - source_labels: [__meta_dockerswarm_node_address]
         target_label: host_ip
       - source_labels: [__meta_dockerswarm_node_hostname]
@@ -59,6 +65,8 @@ scrape_configs:
     static_configs:
       - targets:
           - alertmanager:9093
+        labels:
+          service_name: alertmanager
 
   - job_name: postgres_exporter
     dockerswarm_sd_configs:
@@ -72,6 +80,8 @@ scrape_configs:
       - source_labels: [__meta_dockerswarm_service_name]
         regex: .+_postgres_exporter
         action: keep
+      - source_labels: [__meta_dockerswarm_service_name]
+        target_label: service_name
       - source_labels: [__meta_dockerswarm_node_address]
         target_label: host_ip
       - source_labels: [__meta_dockerswarm_node_hostname]
@@ -92,9 +102,15 @@ scrape_configs:
         regex: .+_redis_exporter_.+
         action: keep
       - source_labels: [__meta_dockerswarm_service_name]
+        target_label: service_name
+      - source_labels: [__meta_dockerswarm_service_name]
         regex: .+_redis_exporter_(.+)
         target_label: redis_role
         replacement: '$1'
+      - source_labels: [__meta_dockerswarm_node_address]
+        target_label: host_ip
+      - source_labels: [__meta_dockerswarm_node_hostname]
+        target_label: nodename
       - source_labels: [__meta_dockerswarm_node_hostname]
         target_label: instance
 
@@ -110,6 +126,8 @@ scrape_configs:
       - source_labels: [__meta_dockerswarm_service_name]
         regex: tools_rabbitmq
         action: keep
+      - source_labels: [__meta_dockerswarm_service_name]
+        target_label: service_name
       - source_labels: [__meta_dockerswarm_node_address]
         target_label: host_ip
       - source_labels: [__meta_dockerswarm_node_hostname]
@@ -132,8 +150,16 @@ scrape_configs:
       - source_labels: [__meta_dockerswarm_service_name]
         regex: tools_bps_haproxy
         action: keep
+      - source_labels: [__meta_dockerswarm_service_name]
+        target_label: service_name
+      - source_labels: [__address__]
+        target_label: target
       - source_labels: [__address__]
         target_label: __param_target
+      - source_labels: [__meta_dockerswarm_node_hostname]
+        target_label: nodename
+      - source_labels: [__meta_dockerswarm_node_address]
+        target_label: host_ip
       - source_labels: [__meta_dockerswarm_node_hostname]
         target_label: instance
       - target_label: __address__
@@ -154,8 +180,16 @@ scrape_configs:
       - source_labels: [__meta_dockerswarm_service_name]
         regex: tools_postgresql
         action: keep
+      - source_labels: [__meta_dockerswarm_service_name]
+        target_label: service_name
+      - source_labels: [__address__]
+        target_label: target
       - source_labels: [__address__]
         target_label: __param_target
+      - source_labels: [__meta_dockerswarm_node_hostname]
+        target_label: nodename
+      - source_labels: [__meta_dockerswarm_node_address]
+        target_label: host_ip
       - source_labels: [__meta_dockerswarm_node_hostname]
         target_label: instance
       - target_label: __address__
@@ -176,8 +210,16 @@ scrape_configs:
       - source_labels: [__meta_dockerswarm_service_name]
         regex: tools_rabbitmq
         action: keep
+      - source_labels: [__meta_dockerswarm_service_name]
+        target_label: service_name
+      - source_labels: [__address__]
+        target_label: target
       - source_labels: [__address__]
         target_label: __param_target
+      - source_labels: [__meta_dockerswarm_node_hostname]
+        target_label: nodename
+      - source_labels: [__meta_dockerswarm_node_address]
+        target_label: host_ip
       - source_labels: [__meta_dockerswarm_node_hostname]
         target_label: instance
       - target_label: __address__
@@ -198,11 +240,21 @@ scrape_configs:
       - source_labels: [__meta_dockerswarm_service_name]
         regex: tools_cache-redis-.+
         action: keep
-      - source_labels: [__address__]
-        target_label: __param_target
+      - source_labels: [__meta_dockerswarm_service_name]
+        target_label: service_name
       - source_labels: [__meta_dockerswarm_service_name]
         regex: tools_(cache-redis-.+)
-        target_label: instance
+        target_label: redis_role
         replacement: '$1'
+      - source_labels: [__address__]
+        target_label: target
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__meta_dockerswarm_node_hostname]
+        target_label: nodename
+      - source_labels: [__meta_dockerswarm_node_address]
+        target_label: host_ip
+      - source_labels: [__meta_dockerswarm_service_name]
+        target_label: instance
       - target_label: __address__
         replacement: blackbox_exporter:9115

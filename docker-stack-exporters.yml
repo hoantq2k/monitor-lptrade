@@ -198,8 +198,10 @@ services:
 
   redis_exporter_master:
     image: ${REDIS_EXPORTER_IMAGE:-oliver006/redis_exporter:latest}
-    command:
-      - "--redis.addr=redis://${TOOLS_STACK_NAME:-tools}_cache-redis-master:6379"
+    environment:
+      REDIS_ADDR: redis://${TOOLS_STACK_NAME:-tools}_cache-redis-master:6379
+      REDIS_USER: ${REDIS_EXPORTER_USER:-}
+      REDIS_PASSWORD: ${REDIS_EXPORTER_PASSWORD:?REDIS_EXPORTER_PASSWORD is required}
     networks:
       - monitoring
       - tools_dmz
@@ -216,8 +218,10 @@ services:
 
   redis_exporter_slave:
     image: ${REDIS_EXPORTER_IMAGE:-oliver006/redis_exporter:latest}
-    command:
-      - "--redis.addr=redis://${TOOLS_STACK_NAME:-tools}_cache-redis-slave:6379"
+    environment:
+      REDIS_ADDR: redis://${TOOLS_STACK_NAME:-tools}_cache-redis-slave:6379
+      REDIS_USER: ${REDIS_EXPORTER_USER:-}
+      REDIS_PASSWORD: ${REDIS_EXPORTER_PASSWORD:?REDIS_EXPORTER_PASSWORD is required}
     networks:
       - monitoring
       - tools_dmz
@@ -234,8 +238,10 @@ services:
 
   redis_exporter_socket:
     image: ${REDIS_EXPORTER_IMAGE:-oliver006/redis_exporter:latest}
-    command:
-      - "--redis.addr=redis://${TOOLS_STACK_NAME:-tools}_cache-redis-socket:6379"
+    environment:
+      REDIS_ADDR: redis://${TOOLS_STACK_NAME:-tools}_cache-redis-socket:6379
+      REDIS_USER: ${REDIS_EXPORTER_USER:-}
+      REDIS_PASSWORD: ${REDIS_EXPORTER_PASSWORD:?REDIS_EXPORTER_PASSWORD is required}
     networks:
       - monitoring
       - tools_dmz
@@ -252,8 +258,10 @@ services:
 
   redis_exporter_market:
     image: ${REDIS_EXPORTER_IMAGE:-oliver006/redis_exporter:latest}
-    command:
-      - "--redis.addr=redis://${TOOLS_STACK_NAME:-tools}_cache-redis-market:6379"
+    environment:
+      REDIS_ADDR: redis://${TOOLS_STACK_NAME:-tools}_cache-redis-market:6379
+      REDIS_USER: ${REDIS_EXPORTER_USER:-}
+      REDIS_PASSWORD: ${REDIS_EXPORTER_PASSWORD:?REDIS_EXPORTER_PASSWORD is required}
     networks:
       - monitoring
       - tools_dmz
@@ -270,8 +278,10 @@ services:
 
   redis_exporter_pubsub:
     image: ${REDIS_EXPORTER_IMAGE:-oliver006/redis_exporter:latest}
-    command:
-      - "--redis.addr=redis://${TOOLS_STACK_NAME:-tools}_cache-redis-pubsub:6379"
+    environment:
+      REDIS_ADDR: redis://${TOOLS_STACK_NAME:-tools}_cache-redis-pubsub:6379
+      REDIS_USER: ${REDIS_EXPORTER_USER:-}
+      REDIS_PASSWORD: ${REDIS_EXPORTER_PASSWORD:?REDIS_EXPORTER_PASSWORD is required}
     networks:
       - monitoring
       - tools_dmz
