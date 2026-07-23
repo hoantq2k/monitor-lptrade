@@ -1,0 +1,268 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+rule_files:
+  - /etc/prometheus/rules.yml
+
+# Prometheus config cho cum MID.
+# Cum MID chi co stack `femid` chay tren overlay `backend`
+# (bpsbase, bpsreport, bpsreportbroker, external, haproxy).
+# Khong co Postgres/Redis/RabbitMQ nen bo cac scrape job tuong ung; chi giu:
+#   - node_exporter, cadvisor cua stack monitor tren tung node
+#   - blackbox TCP probe cho femid_haproxy va cac API service Node.js
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets:
+          - localhost:9090
+        labels:
+          service_name: prometheus
+          cluster: mid
+
+  - job_name: node_exporter
+    dockerswarm_sd_configs:
+      - host: unix:///var/run/docker.sock
+        role: tasks
+        port: 9100
+        filters:
+          - name: desired-state
+            values: ["running"]
+    relabel_configs:
+      - source_labels: [__meta_dockerswarm_service_name]
+        regex: .+_node_exporter
+        action: keep
+      - source_labels: [__meta_dockerswarm_service_name]
+        target_label: service_name
+      - source_labels: [__meta_dockerswarm_node_address]
+        target_label: host_ip
+      - source_labels: [__meta_dockerswarm_node_hostname]
+        target_label: nodename
+      - target_label: cluster
+        replacement: mid
+
+  - job_name: cadvisor
+    dockerswarm_sd_configs:
+      - host: unix:///var/run/docker.sock
+        role: tasks
+        port: 8080
+        filters:
+          - name: desired-state
+            values: ["running"]
+    relabel_configs:
+      - source_labels: [__meta_dockerswarm_service_name]
+        regex: .+_cadvisor
+        action: keep
+      - source_labels: [__meta_dockerswarm_service_name]
+        target_label: service_name
+      - source_labels: [__meta_dockerswarm_node_address]
+        target_label: host_ip
+      - source_labels: [__meta_dockerswarm_node_hostname]
+        target_label: nodename
+      - source_labels: [__address__]
+        regex: '([^:]+):.*'
+        target_label: instance
+        replacement: '$1'
+      - target_label: cluster
+        replacement: mid
+
+  - job_name: alertmanager
+    static_configs:
+      - targets:
+          - alertmanager:9093
+        labels:
+          service_name: alertmanager
+          cluster: mid
+
+  - job_name: haproxy_exporter
+    dockerswarm_sd_configs:
+      - host: unix:///var/run/docker.sock
+        role: tasks
+        port: 9101
+        filters:
+          - name: desired-state
+            values: ["running"]
+    relabel_configs:
+      - source_labels: [__meta_dockerswarm_service_name]
+        regex: .+_haproxy_exporter_.+
+        action: keep
+      - source_labels: [__meta_dockerswarm_service_name]
+        target_label: service_name
+      - source_labels: [__meta_dockerswarm_service_name]
+        regex: .+_haproxy_exporter_(.+)
+        target_label: haproxy_target
+        replacement: '$1'
+      - source_labels: [__meta_dockerswarm_node_address]
+        target_label: host_ip
+      - source_labels: [__meta_dockerswarm_node_hostname]
+        target_label: nodename
+      - source_labels: [__meta_dockerswarm_service_name]
+        target_label: instance
+      - target_label: cluster
+        replacement: mid
+
+  - job_name: blackbox_haproxy_tcp
+    metrics_path: /probe
+    params:
+      module: [tcp_connect]
+    dockerswarm_sd_configs:
+      - host: unix:///var/run/docker.sock
+        role: tasks
+        port: 9000
+        filters:
+          - name: desired-state
+            values: ["running"]
+    relabel_configs:
+      - source_labels: [__meta_dockerswarm_service_name]
+        regex: femid_haproxy
+        action: keep
+      - source_labels: [__meta_dockerswarm_service_name]
+        target_label: service_name
+      - source_labels: [__address__]
+        target_label: target
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__meta_dockerswarm_node_hostname]
+        target_label: nodename
+      - source_labels: [__meta_dockerswarm_node_address]
+        target_label: host_ip
+      - source_labels: [__meta_dockerswarm_node_hostname]
+        target_label: instance
+      - target_label: cluster
+        replacement: mid
+      - target_label: __address__
+        replacement: blackbox_exporter:9115
+
+  - job_name: blackbox_bpsbase_tcp
+    metrics_path: /probe
+    params:
+      module: [tcp_connect]
+    dockerswarm_sd_configs:
+      - host: unix:///var/run/docker.sock
+        role: tasks
+        port: 1333
+        filters:
+          - name: desired-state
+            values: ["running"]
+    relabel_configs:
+      - source_labels: [__meta_dockerswarm_service_name]
+        regex: femid_bpsbase
+        action: keep
+      - source_labels: [__meta_dockerswarm_service_name]
+        target_label: service_name
+      - source_labels: [__address__]
+        target_label: target
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__meta_dockerswarm_node_hostname]
+        target_label: nodename
+      - source_labels: [__meta_dockerswarm_node_address]
+        target_label: host_ip
+      - source_labels: [__meta_dockerswarm_node_hostname]
+        target_label: instance
+      - target_label: cluster
+        replacement: mid
+      - target_label: __address__
+        replacement: blackbox_exporter:9115
+
+  - job_name: blackbox_bpsreport_tcp
+    metrics_path: /probe
+    params:
+      module: [tcp_connect]
+    dockerswarm_sd_configs:
+      - host: unix:///var/run/docker.sock
+        role: tasks
+        port: 13331
+        filters:
+          - name: desired-state
+            values: ["running"]
+    relabel_configs:
+      - source_labels: [__meta_dockerswarm_service_name]
+        regex: femid_bpsreport
+        action: keep
+      - source_labels: [__meta_dockerswarm_service_name]
+        target_label: service_name
+      - source_labels: [__address__]
+        target_label: target
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__meta_dockerswarm_node_hostname]
+        target_label: nodename
+      - source_labels: [__meta_dockerswarm_node_address]
+        target_label: host_ip
+      - source_labels: [__meta_dockerswarm_node_hostname]
+        target_label: instance
+      - target_label: cluster
+        replacement: mid
+      - target_label: __address__
+        replacement: blackbox_exporter:9115
+
+  - job_name: blackbox_bpsreportbroker_tcp
+    metrics_path: /probe
+    params:
+      module: [tcp_connect]
+    dockerswarm_sd_configs:
+      - host: unix:///var/run/docker.sock
+        role: tasks
+        port: 13332
+        filters:
+          - name: desired-state
+            values: ["running"]
+    relabel_configs:
+      - source_labels: [__meta_dockerswarm_service_name]
+        regex: femid_bpsreportbroker
+        action: keep
+      - source_labels: [__meta_dockerswarm_service_name]
+        target_label: service_name
+      - source_labels: [__address__]
+        target_label: target
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__meta_dockerswarm_node_hostname]
+        target_label: nodename
+      - source_labels: [__meta_dockerswarm_node_address]
+        target_label: host_ip
+      - source_labels: [__meta_dockerswarm_node_hostname]
+        target_label: instance
+      - target_label: cluster
+        replacement: mid
+      - target_label: __address__
+        replacement: blackbox_exporter:9115
+
+  - job_name: blackbox_external_tcp
+    metrics_path: /probe
+    params:
+      module: [tcp_connect]
+    dockerswarm_sd_configs:
+      - host: unix:///var/run/docker.sock
+        role: tasks
+        port: 1330
+        filters:
+          - name: desired-state
+            values: ["running"]
+    relabel_configs:
+      - source_labels: [__meta_dockerswarm_service_name]
+        regex: femid_external
+        action: keep
+      - source_labels: [__meta_dockerswarm_service_name]
+        target_label: service_name
+      - source_labels: [__address__]
+        target_label: target
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__meta_dockerswarm_node_hostname]
+        target_label: nodename
+      - source_labels: [__meta_dockerswarm_node_address]
+        target_label: host_ip
+      - source_labels: [__meta_dockerswarm_node_hostname]
+        target_label: instance
+      - target_label: cluster
+        replacement: mid
+      - target_label: __address__
+        replacement: blackbox_exporter:9115

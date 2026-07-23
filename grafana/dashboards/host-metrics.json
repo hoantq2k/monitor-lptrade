@@ -1,0 +1,620 @@
+{
+  "annotations": {"list": []},
+  "description": "CPU / RAM / Disk / IO / Network cua tung Swarm node. Data tu node_exporter chay global.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "id": 100,
+      "title": "Summary",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "short"
+        }
+      },
+      "gridPos": {"h": 4, "w": 4, "x": 0, "y": 1},
+      "id": 1,
+      "options": {"colorMode": "value", "graphMode": "none", "textMode": "value_and_name"},
+      "targets": [{
+        "expr": "count(up{cluster=~\"$cluster\", job=\"node_exporter\"})",
+        "legendFormat": "Tong node",
+        "refId": "A"
+      }],
+      "title": "Tong node",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]},
+          "unit": "short"
+        }
+      },
+      "gridPos": {"h": 4, "w": 4, "x": 4, "y": 1},
+      "id": 2,
+      "options": {"colorMode": "background", "graphMode": "none", "textMode": "value_and_name"},
+      "targets": [{
+        "expr": "count(up{cluster=~\"$cluster\", job=\"node_exporter\"} == 0) or vector(0)",
+        "legendFormat": "Node DOWN",
+        "refId": "A"
+      }],
+      "title": "Node DOWN",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 70}, {"color": "red", "value": 90}]},
+          "unit": "percent",
+          "max": 100
+        }
+      },
+      "gridPos": {"h": 4, "w": 5, "x": 8, "y": 1},
+      "id": 3,
+      "options": {"colorMode": "background", "graphMode": "area", "textMode": "value_and_name"},
+      "targets": [{
+        "expr": "max(100 - (avg by (nodename) (irate(node_cpu_seconds_total{cluster=~\"$cluster\", mode=\"idle\"}[5m])) * 100))",
+        "legendFormat": "Node CPU cao nhat",
+        "refId": "A"
+      }],
+      "title": "Max CPU %",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 80}, {"color": "red", "value": 90}]},
+          "unit": "percent",
+          "max": 100
+        }
+      },
+      "gridPos": {"h": 4, "w": 5, "x": 13, "y": 1},
+      "id": 4,
+      "options": {"colorMode": "background", "graphMode": "area", "textMode": "value_and_name"},
+      "targets": [{
+        "expr": "max((1 - (node_memory_MemAvailable_bytes{cluster=~\"$cluster\"} / node_memory_MemTotal_bytes{cluster=~\"$cluster\"})) * 100)",
+        "legendFormat": "Node RAM cao nhat",
+        "refId": "A"
+      }],
+      "title": "Max RAM %",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 80}, {"color": "red", "value": 90}]},
+          "unit": "percent",
+          "max": 100
+        }
+      },
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 1},
+      "id": 5,
+      "options": {"colorMode": "background", "graphMode": "area", "textMode": "value_and_name"},
+      "targets": [{
+        "expr": "max(100 - ((node_filesystem_avail_bytes{cluster=~\"$cluster\", fstype!~\"tmpfs|overlay|squashfs|nsfs\"} * 100) / node_filesystem_size_bytes{cluster=~\"$cluster\", fstype!~\"tmpfs|overlay|squashfs|nsfs\"}))",
+        "legendFormat": "Phan vung day nhat",
+        "refId": "A"
+      }],
+      "title": "Max Disk %",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 5},
+      "id": 101,
+      "title": "CPU",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "% CPU su dung tren tung node (100% - idle).",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "fillOpacity": 15, "lineWidth": 2, "showPoints": "never"},
+          "max": 100,
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 70}, {"color": "red", "value": 90}]},
+          "unit": "percent"
+        }
+      },
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 6},
+      "id": 6,
+      "options": {
+        "legend": {"calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [{
+        "expr": "100 - (avg by (nodename) (irate(node_cpu_seconds_total{cluster=~\"$cluster\", nodename=~\"$node\", mode=\"idle\"}[5m])) * 100)",
+        "legendFormat": "{{nodename}}",
+        "refId": "A"
+      }],
+      "title": "CPU usage %",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "Load average 1m / 5m / 15m tren tung node.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "fillOpacity": 5, "lineWidth": 1, "showPoints": "never"},
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "short"
+        }
+      },
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 6},
+      "id": 7,
+      "options": {
+        "legend": {"calcs": ["lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {"expr": "node_load1{cluster=~\"$cluster\", nodename=~\"$node\"}", "legendFormat": "{{nodename}} · 1m", "refId": "A"},
+        {"expr": "node_load5{cluster=~\"$cluster\", nodename=~\"$node\"}", "legendFormat": "{{nodename}} · 5m", "refId": "B"},
+        {"expr": "node_load15{cluster=~\"$cluster\", nodename=~\"$node\"}", "legendFormat": "{{nodename}} · 15m", "refId": "C"}
+      ],
+      "title": "Load average",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "CPU chia theo mode: user, system, iowait, softirq, ...",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "fillOpacity": 30, "lineWidth": 1, "showPoints": "never", "stacking": {"mode": "normal"}},
+          "max": 100,
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "percent"
+        }
+      },
+      "gridPos": {"h": 9, "w": 24, "x": 0, "y": 15},
+      "id": 8,
+      "options": {
+        "legend": {"calcs": ["mean", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [{
+        "expr": "avg by (nodename, mode) (irate(node_cpu_seconds_total{cluster=~\"$cluster\", nodename=~\"$node\", mode!=\"idle\"}[5m])) * 100",
+        "legendFormat": "{{nodename}} · {{mode}}",
+        "refId": "A"
+      }],
+      "title": "CPU by mode (excl idle)",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 24},
+      "id": 102,
+      "title": "Memory",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "% RAM su dung tren tung node.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "fillOpacity": 15, "lineWidth": 2, "showPoints": "never"},
+          "max": 100,
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 80}, {"color": "red", "value": 90}]},
+          "unit": "percent"
+        }
+      },
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 25},
+      "id": 9,
+      "options": {
+        "legend": {"calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [{
+        "expr": "(1 - (node_memory_MemAvailable_bytes{cluster=~\"$cluster\", nodename=~\"$node\"} / node_memory_MemTotal_bytes{cluster=~\"$cluster\", nodename=~\"$node\"})) * 100",
+        "legendFormat": "{{nodename}}",
+        "refId": "A"
+      }],
+      "title": "Memory usage %",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "Memory breakdown: used / cached / buffers / available.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "fillOpacity": 30, "lineWidth": 1, "showPoints": "never", "stacking": {"mode": "normal"}},
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "bytes"
+        }
+      },
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 25},
+      "id": 10,
+      "options": {
+        "legend": {"calcs": ["mean", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {"expr": "node_memory_MemTotal_bytes{cluster=~\"$cluster\", nodename=~\"$node\"} - node_memory_MemAvailable_bytes{cluster=~\"$cluster\", nodename=~\"$node\"}", "legendFormat": "{{nodename}} · used", "refId": "A"},
+        {"expr": "node_memory_Cached_bytes{cluster=~\"$cluster\", nodename=~\"$node\"}", "legendFormat": "{{nodename}} · cached", "refId": "B"},
+        {"expr": "node_memory_Buffers_bytes{cluster=~\"$cluster\", nodename=~\"$node\"}", "legendFormat": "{{nodename}} · buffers", "refId": "C"}
+      ],
+      "title": "Memory breakdown",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "Swap usage. Neu > 0 lien tuc, kiem tra RAM/OOM.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "fillOpacity": 15, "lineWidth": 2, "showPoints": "never"},
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 1}]},
+          "unit": "bytes"
+        }
+      },
+      "gridPos": {"h": 7, "w": 24, "x": 0, "y": 34},
+      "id": 11,
+      "options": {
+        "legend": {"calcs": ["max", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [{
+        "expr": "node_memory_SwapTotal_bytes{cluster=~\"$cluster\", nodename=~\"$node\"} - node_memory_SwapFree_bytes{cluster=~\"$cluster\", nodename=~\"$node\"}",
+        "legendFormat": "{{nodename}}",
+        "refId": "A"
+      }],
+      "title": "Swap used",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 41},
+      "id": 103,
+      "title": "Disk",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "% disk su dung theo tung node/mountpoint.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"align": "auto", "cellOptions": {"type": "gauge", "mode": "gradient"}, "filterable": true},
+          "max": 100,
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 70}, {"color": "red", "value": 90}]},
+          "unit": "percent"
+        }
+      },
+      "gridPos": {"h": 10, "w": 12, "x": 0, "y": 42},
+      "id": 12,
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true,
+        "sortBy": [{"desc": true, "displayName": "Value"}]
+      },
+      "targets": [{
+        "expr": "100 - ((node_filesystem_avail_bytes{cluster=~\"$cluster\", nodename=~\"$node\", fstype!~\"tmpfs|overlay|squashfs|nsfs\"} * 100) / node_filesystem_size_bytes{cluster=~\"$cluster\", nodename=~\"$node\", fstype!~\"tmpfs|overlay|squashfs|nsfs\"})",
+        "format": "table",
+        "instant": true,
+        "legendFormat": "{{nodename}} · {{mountpoint}}",
+        "refId": "A"
+      }],
+      "title": "Disk usage % (all mountpoints)",
+      "transformations": [
+        {"id": "organize", "options": {"excludeByName": {"Time": true, "__name__": true, "job": true, "instance": true, "service_name": true, "host_ip": true, "cluster": true, "device": false, "fstype": true}, "renameByName": {"Value": "% used", "nodename": "node", "mountpoint": "mount"}}}
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "Dung luong con trong.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "fillOpacity": 15, "lineWidth": 2, "showPoints": "never"},
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "orange", "value": 10737418240}, {"color": "green", "value": 53687091200}]},
+          "unit": "bytes"
+        }
+      },
+      "gridPos": {"h": 10, "w": 12, "x": 12, "y": 42},
+      "id": 13,
+      "options": {
+        "legend": {"calcs": ["min", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "asc"}
+      },
+      "targets": [{
+        "expr": "node_filesystem_avail_bytes{cluster=~\"$cluster\", nodename=~\"$node\", fstype!~\"tmpfs|overlay|squashfs|nsfs\"}",
+        "legendFormat": "{{nodename}} · {{mountpoint}}",
+        "refId": "A"
+      }],
+      "title": "Disk free",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "% inode da dung. Neu day, filesystem hong nhu day disk.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "fillOpacity": 15, "lineWidth": 2, "showPoints": "never"},
+          "max": 100,
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 80}, {"color": "red", "value": 95}]},
+          "unit": "percent"
+        }
+      },
+      "gridPos": {"h": 7, "w": 24, "x": 0, "y": 52},
+      "id": 14,
+      "options": {
+        "legend": {"calcs": ["max", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [{
+        "expr": "100 - (node_filesystem_files_free{cluster=~\"$cluster\", nodename=~\"$node\", fstype!~\"tmpfs|overlay|squashfs|nsfs\"} / node_filesystem_files{cluster=~\"$cluster\", nodename=~\"$node\", fstype!~\"tmpfs|overlay|squashfs|nsfs\"}) * 100",
+        "legendFormat": "{{nodename}} · {{mountpoint}}",
+        "refId": "A"
+      }],
+      "title": "Inode usage %",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 59},
+      "id": 104,
+      "title": "Disk IO",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "Toc do doc/ghi theo bytes/s cua tung device.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never"},
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "Bps"
+        }
+      },
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 60},
+      "id": 15,
+      "options": {
+        "legend": {"calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {"expr": "rate(node_disk_read_bytes_total{cluster=~\"$cluster\", nodename=~\"$node\"}[5m])", "legendFormat": "{{nodename}} · {{device}} · read", "refId": "A"},
+        {"expr": "rate(node_disk_written_bytes_total{cluster=~\"$cluster\", nodename=~\"$node\"}[5m])", "legendFormat": "{{nodename}} · {{device}} · write", "refId": "B"}
+      ],
+      "title": "Disk throughput",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "IOPS: so operation doc/ghi tren giay.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never"},
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "iops"
+        }
+      },
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 60},
+      "id": 16,
+      "options": {
+        "legend": {"calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {"expr": "rate(node_disk_reads_completed_total{cluster=~\"$cluster\", nodename=~\"$node\"}[5m])", "legendFormat": "{{nodename}} · {{device}} · read", "refId": "A"},
+        {"expr": "rate(node_disk_writes_completed_total{cluster=~\"$cluster\", nodename=~\"$node\"}[5m])", "legendFormat": "{{nodename}} · {{device}} · write", "refId": "B"}
+      ],
+      "title": "Disk IOPS",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "% thoi gian disk ban lam IO. > 80% lien tuc = disk qua tai.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "fillOpacity": 15, "lineWidth": 2, "showPoints": "never"},
+          "max": 100,
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 70}, {"color": "red", "value": 90}]},
+          "unit": "percent"
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 69},
+      "id": 17,
+      "options": {
+        "legend": {"calcs": ["max", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [{
+        "expr": "rate(node_disk_io_time_seconds_total{cluster=~\"$cluster\", nodename=~\"$node\"}[5m]) * 100",
+        "legendFormat": "{{nodename}} · {{device}}",
+        "refId": "A"
+      }],
+      "title": "Disk IO time %",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "Do sau queue trung binh. Cao = disk khong theo kip request.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never"},
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 10}, {"color": "red", "value": 50}]},
+          "unit": "short"
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 69},
+      "id": 18,
+      "options": {
+        "legend": {"calcs": ["max", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [{
+        "expr": "rate(node_disk_io_time_weighted_seconds_total{cluster=~\"$cluster\", nodename=~\"$node\"}[5m])",
+        "legendFormat": "{{nodename}} · {{device}}",
+        "refId": "A"
+      }],
+      "title": "Disk queue depth",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 77},
+      "id": 105,
+      "title": "Network",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "Traffic RX/TX cua tung interface (bo lo, docker, veth).",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never"},
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "Bps"
+        }
+      },
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 78},
+      "id": 19,
+      "options": {
+        "legend": {"calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {"expr": "rate(node_network_receive_bytes_total{cluster=~\"$cluster\", nodename=~\"$node\", device!~\"lo|docker.*|veth.*|br-.*|cni.*\"}[5m])", "legendFormat": "{{nodename}} · {{device}} · RX", "refId": "A"},
+        {"expr": "rate(node_network_transmit_bytes_total{cluster=~\"$cluster\", nodename=~\"$node\", device!~\"lo|docker.*|veth.*|br-.*|cni.*\"}[5m])", "legendFormat": "{{nodename}} · {{device}} · TX", "refId": "B"}
+      ],
+      "title": "Network throughput",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "Loi/drop trong 5 phut. Neu > 0 lien tuc, kiem tra card mang / MTU / driver.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "fillOpacity": 20, "lineWidth": 2, "showPoints": "never"},
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]},
+          "unit": "short"
+        }
+      },
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 78},
+      "id": 20,
+      "options": {
+        "legend": {"calcs": ["max", "sum"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {"expr": "increase(node_network_receive_errs_total{cluster=~\"$cluster\", nodename=~\"$node\", device!~\"lo|docker.*|veth.*|br-.*|cni.*\"}[5m])", "legendFormat": "{{nodename}} · {{device}} · rx_errs", "refId": "A"},
+        {"expr": "increase(node_network_transmit_errs_total{cluster=~\"$cluster\", nodename=~\"$node\", device!~\"lo|docker.*|veth.*|br-.*|cni.*\"}[5m])", "legendFormat": "{{nodename}} · {{device}} · tx_errs", "refId": "B"},
+        {"expr": "increase(node_network_receive_drop_total{cluster=~\"$cluster\", nodename=~\"$node\", device!~\"lo|docker.*|veth.*|br-.*|cni.*\"}[5m])", "legendFormat": "{{nodename}} · {{device}} · rx_drop", "refId": "C"},
+        {"expr": "increase(node_network_transmit_drop_total{cluster=~\"$cluster\", nodename=~\"$node\", device!~\"lo|docker.*|veth.*|br-.*|cni.*\"}[5m])", "legendFormat": "{{nodename}} · {{device}} · tx_drop", "refId": "D"}
+      ],
+      "title": "Network errors / drops (5m)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "So connection TCP dang mo tren node.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "fillOpacity": 5, "lineWidth": 1, "showPoints": "never"},
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "short"
+        }
+      },
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 87},
+      "id": 21,
+      "options": {
+        "legend": {"calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {"expr": "node_netstat_Tcp_CurrEstab{cluster=~\"$cluster\", nodename=~\"$node\"}", "legendFormat": "{{nodename}} · ESTABLISHED", "refId": "A"},
+        {"expr": "node_sockstat_TCP_tw{cluster=~\"$cluster\", nodename=~\"$node\"}", "legendFormat": "{{nodename}} · TIME_WAIT", "refId": "B"}
+      ],
+      "title": "TCP connections",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 37,
+  "style": "dark",
+  "tags": ["swarm", "host", "node-exporter"],
+  "templating": {
+    "list": [
+      {
+        "current": {"selected": false, "text": "Prometheus", "value": "Prometheus"},
+        "hide": 0,
+        "includeAll": false,
+        "label": "Prometheus datasource",
+        "multi": false,
+        "name": "DS_PROMETHEUS",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "type": "datasource"
+      },
+      {
+        "current": {"selected": true, "text": ["All"], "value": ["$__all"]},
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "definition": "label_values(node_uname_info, cluster)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Cum",
+        "multi": true,
+        "name": "cluster",
+        "query": {"query": "label_values(node_uname_info, cluster)", "refId": "PrometheusVariableQueryEditor-VariableQuery"},
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {"selected": true, "text": ["All"], "value": ["$__all"]},
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "definition": "label_values(node_uname_info{cluster=~\"$cluster\"}, nodename)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Node",
+        "multi": true,
+        "name": "node",
+        "query": {"query": "label_values(node_uname_info{cluster=~\"$cluster\"}, nodename)", "refId": "PrometheusVariableQueryEditor-VariableQuery"},
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {"from": "now-1h", "to": "now"},
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Host Metrics (CPU/RAM/Disk/IO/Network)",
+  "uid": "swarm-host-metrics",
+  "version": 1,
+  "weekStart": ""
+}

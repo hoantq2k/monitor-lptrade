@@ -1,6 +1,17 @@
 #!/usr/bin/env bash
+# Wrapper an toan: bat buoc chi ro cum khi trien khai.
+# Vd:  ./start.sh dmz    hoac    ./start.sh mid
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-"$ROOT_DIR/scripts/start-all.sh"
+CLUSTER="${1:-}"
+case "$CLUSTER" in
+  dmz|mid)
+    "$ROOT_DIR/scripts/start-$CLUSTER.sh"
+    ;;
+  *)
+    echo "Su dung: $0 <dmz|mid>" >&2
+    exit 1
+    ;;
+esac

@@ -1,0 +1,361 @@
+{
+  "annotations": {"list": []},
+  "description": "CPU / RAM / Network / Restart cua tung container Swarm. Data tu cadvisor global.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "id": 100,
+      "title": "Top consumers",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "Top 10 service theo CPU trung binh trong 5 phut.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "bars", "fillOpacity": 80, "lineWidth": 1, "orientation": "horizontal"},
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 0.5}, {"color": "red", "value": 0.9}]},
+          "unit": "short"
+        }
+      },
+      "gridPos": {"h": 10, "w": 12, "x": 0, "y": 1},
+      "id": 1,
+      "options": {
+        "legend": {"displayMode": "hidden"},
+        "orientation": "horizontal",
+        "showValue": "always",
+        "tooltip": {"mode": "single"}
+      },
+      "targets": [{
+        "expr": "topk(10, sum by (container_label_com_docker_swarm_service_name) (rate(container_cpu_usage_seconds_total{cluster=~\"$cluster\", container_label_com_docker_swarm_service_name!=\"\", image!=\"\"}[5m])))",
+        "legendFormat": "{{container_label_com_docker_swarm_service_name}}",
+        "refId": "A"
+      }],
+      "title": "Top 10 CPU (cores dung)",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "Top 10 service theo RAM working set.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "bars", "fillOpacity": 80, "lineWidth": 1, "orientation": "horizontal"},
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "bytes"
+        }
+      },
+      "gridPos": {"h": 10, "w": 12, "x": 12, "y": 1},
+      "id": 2,
+      "options": {
+        "legend": {"displayMode": "hidden"},
+        "orientation": "horizontal",
+        "showValue": "always",
+        "tooltip": {"mode": "single"}
+      },
+      "targets": [{
+        "expr": "topk(10, sum by (container_label_com_docker_swarm_service_name) (container_memory_working_set_bytes{cluster=~\"$cluster\", container_label_com_docker_swarm_service_name!=\"\", image!=\"\"}))",
+        "legendFormat": "{{container_label_com_docker_swarm_service_name}}",
+        "refId": "A"
+      }],
+      "title": "Top 10 RAM (working set)",
+      "type": "bargauge"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 11},
+      "id": 101,
+      "title": "CPU per service",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "CPU (cores) su dung theo tung service Swarm, filter theo bien.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never"},
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "short"
+        }
+      },
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 12},
+      "id": 3,
+      "options": {
+        "legend": {"calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [{
+        "expr": "sum by (container_label_com_docker_swarm_service_name) (rate(container_cpu_usage_seconds_total{cluster=~\"$cluster\", container_label_com_docker_swarm_service_name=~\"$service\", image!=\"\"}[5m]))",
+        "legendFormat": "{{container_label_com_docker_swarm_service_name}}",
+        "refId": "A"
+      }],
+      "title": "CPU cores per service",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "CPU chi tiet theo tung task (container instance) cua service.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "fillOpacity": 5, "lineWidth": 1, "showPoints": "never"},
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "short"
+        }
+      },
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 22},
+      "id": 4,
+      "options": {
+        "legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [{
+        "expr": "sum by (container_label_com_docker_swarm_task_name, nodename) (rate(container_cpu_usage_seconds_total{cluster=~\"$cluster\", container_label_com_docker_swarm_service_name=~\"$service\", image!=\"\"}[5m]))",
+        "legendFormat": "{{container_label_com_docker_swarm_task_name}} · {{nodename}}",
+        "refId": "A"
+      }],
+      "title": "CPU per task (chi tiet tung container)",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 32},
+      "id": 102,
+      "title": "Memory per service",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "RAM working set per service.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "fillOpacity": 15, "lineWidth": 2, "showPoints": "never"},
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "bytes"
+        }
+      },
+      "gridPos": {"h": 10, "w": 12, "x": 0, "y": 33},
+      "id": 5,
+      "options": {
+        "legend": {"calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [{
+        "expr": "sum by (container_label_com_docker_swarm_service_name) (container_memory_working_set_bytes{cluster=~\"$cluster\", container_label_com_docker_swarm_service_name=~\"$service\", image!=\"\"})",
+        "legendFormat": "{{container_label_com_docker_swarm_service_name}}",
+        "refId": "A"
+      }],
+      "title": "RAM working set per service",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "% RAM voi memory limit (chi hien service co dat limit).",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "fillOpacity": 15, "lineWidth": 2, "showPoints": "never"},
+          "max": 100,
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 70}, {"color": "red", "value": 90}]},
+          "unit": "percent"
+        }
+      },
+      "gridPos": {"h": 10, "w": 12, "x": 12, "y": 33},
+      "id": 6,
+      "options": {
+        "legend": {"calcs": ["max", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [{
+        "expr": "(max by (container_label_com_docker_swarm_service_name) (container_memory_working_set_bytes{cluster=~\"$cluster\", container_label_com_docker_swarm_service_name=~\"$service\", image!=\"\"}) / max by (container_label_com_docker_swarm_service_name) (container_spec_memory_limit_bytes{cluster=~\"$cluster\", container_label_com_docker_swarm_service_name=~\"$service\", image!=\"\"} > 0)) * 100",
+        "legendFormat": "{{container_label_com_docker_swarm_service_name}}",
+        "refId": "A"
+      }],
+      "title": "% RAM tren memory limit",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 43},
+      "id": 103,
+      "title": "Container network",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "Bytes vao container per service.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never"},
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "Bps"
+        }
+      },
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 44},
+      "id": 7,
+      "options": {
+        "legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [{
+        "expr": "sum by (container_label_com_docker_swarm_service_name) (rate(container_network_receive_bytes_total{cluster=~\"$cluster\", container_label_com_docker_swarm_service_name=~\"$service\"}[5m]))",
+        "legendFormat": "{{container_label_com_docker_swarm_service_name}} · RX",
+        "refId": "A"
+      }],
+      "title": "Container network RX",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "Bytes ra khoi container per service.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never"},
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "Bps"
+        }
+      },
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 44},
+      "id": 8,
+      "options": {
+        "legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [{
+        "expr": "sum by (container_label_com_docker_swarm_service_name) (rate(container_network_transmit_bytes_total{cluster=~\"$cluster\", container_label_com_docker_swarm_service_name=~\"$service\"}[5m]))",
+        "legendFormat": "{{container_label_com_docker_swarm_service_name}} · TX",
+        "refId": "A"
+      }],
+      "title": "Container network TX",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 53},
+      "id": 104,
+      "title": "Restarts & health",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "So lan container restart trong 15 phut. > 1 = crash loop.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "fillOpacity": 20, "lineWidth": 2, "showPoints": "always", "pointSize": 5},
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 1}, {"color": "red", "value": 3}]},
+          "unit": "short"
+        }
+      },
+      "gridPos": {"h": 9, "w": 24, "x": 0, "y": 54},
+      "id": 9,
+      "options": {
+        "legend": {"calcs": ["max", "sum"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [{
+        "expr": "sum by (container_label_com_docker_swarm_service_name, nodename) (changes(container_start_time_seconds{cluster=~\"$cluster\", container_label_com_docker_swarm_service_name!=\"\", image!=\"\"}[15m]))",
+        "legendFormat": "{{container_label_com_docker_swarm_service_name}} · {{nodename}}",
+        "refId": "A"
+      }],
+      "title": "Container restarts (15m)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "So container dang chay theo service (Swarm scheduler = mode:replicated hoac global).",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"align": "auto", "cellOptions": {"type": "auto"}, "filterable": true},
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "short"
+        }
+      },
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 63},
+      "id": 10,
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true,
+        "sortBy": [{"desc": false, "displayName": "Service"}]
+      },
+      "targets": [{
+        "expr": "count by (container_label_com_docker_swarm_service_name) (container_last_seen{cluster=~\"$cluster\", container_label_com_docker_swarm_service_name!=\"\", image!=\"\"} > (time() - 60))",
+        "format": "table",
+        "instant": true,
+        "refId": "A"
+      }],
+      "title": "So container running theo service",
+      "transformations": [
+        {"id": "organize", "options": {"excludeByName": {"Time": true}, "renameByName": {"container_label_com_docker_swarm_service_name": "Service", "Value": "Running tasks"}}}
+      ],
+      "type": "table"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 37,
+  "style": "dark",
+  "tags": ["swarm", "container", "cadvisor"],
+  "templating": {
+    "list": [
+      {
+        "current": {"selected": false, "text": "Prometheus", "value": "Prometheus"},
+        "hide": 0,
+        "includeAll": false,
+        "label": "Prometheus datasource",
+        "multi": false,
+        "name": "DS_PROMETHEUS",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "type": "datasource"
+      },
+      {
+        "current": {"selected": true, "text": ["All"], "value": ["$__all"]},
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "definition": "label_values(container_last_seen, cluster)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Cum",
+        "multi": true,
+        "name": "cluster",
+        "query": {"query": "label_values(container_last_seen, cluster)", "refId": "PrometheusVariableQueryEditor-VariableQuery"},
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {"selected": true, "text": ["All"], "value": ["$__all"]},
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "definition": "label_values(container_last_seen{cluster=~\"$cluster\", container_label_com_docker_swarm_service_name!=\"\"}, container_label_com_docker_swarm_service_name)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Service",
+        "multi": true,
+        "name": "service",
+        "query": {"query": "label_values(container_last_seen{cluster=~\"$cluster\", container_label_com_docker_swarm_service_name!=\"\"}, container_label_com_docker_swarm_service_name)", "refId": "PrometheusVariableQueryEditor-VariableQuery"},
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {"from": "now-1h", "to": "now"},
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Container Metrics (per Swarm service)",
+  "uid": "swarm-container-metrics",
+  "version": 1,
+  "weekStart": ""
+}

@@ -83,7 +83,7 @@ groups:
           description: "Service {{ $labels.container_label_com_docker_swarm_service_name }} trên máy {{ $labels.nodename }} ({{ $labels.host_ip }}) đang sử dụng trung bình hơn 0.9 core CPU trong 10 phút. Vui lòng kiểm tra workload, log và giới hạn tài nguyên của container."
 
       - alert: ContainerMemoryUsageHigh
-        expr: (max by (container_label_com_docker_swarm_service_name, instance, nodename, host_ip) (container_memory_working_set_bytes{job="cadvisor", container_label_com_docker_swarm_service_name!="", image!="", container_label_com_docker_swarm_service_name!~".*_(prometheus|alertmanager|cadvisor|node_exporter|blackbox_exporter|postgres_exporter|redis_exporter|prometheus_msteams)$"}) / max by (container_label_com_docker_swarm_service_name, instance, nodename, host_ip) (container_spec_memory_limit_bytes{job="cadvisor", container_label_com_docker_swarm_service_name!="", image!="", container_spec_memory_limit_bytes>0, container_label_com_docker_swarm_service_name!~".*_(prometheus|alertmanager|cadvisor|node_exporter|blackbox_exporter|postgres_exporter|redis_exporter|prometheus_msteams)$"})) * 100 > 85
+        expr: (max by (container_label_com_docker_swarm_service_name, instance, nodename, host_ip) (container_memory_working_set_bytes{job="cadvisor", container_label_com_docker_swarm_service_name!="", image!="", container_label_com_docker_swarm_service_name!~".*_(prometheus|alertmanager|cadvisor|node_exporter|blackbox_exporter|postgres_exporter|redis_exporter|prometheus_msteams)$"}) / (max by (container_label_com_docker_swarm_service_name, instance, nodename, host_ip) (container_spec_memory_limit_bytes{job="cadvisor", container_label_com_docker_swarm_service_name!="", image!="", container_label_com_docker_swarm_service_name!~".*_(prometheus|alertmanager|cadvisor|node_exporter|blackbox_exporter|postgres_exporter|redis_exporter|prometheus_msteams)$"}) > 0)) * 100 > 85
         for: 10m
         labels:
           severity: warning
@@ -99,6 +99,33 @@ groups:
         annotations:
           summary: "Cảnh báo: service {{ $labels.container_label_com_docker_swarm_service_name }} có lỗi mạng"
           description: "cAdvisor ghi nhận service {{ $labels.container_label_com_docker_swarm_service_name }} trên máy {{ $labels.nodename }} ({{ $labels.host_ip }}) phát sinh receive/transmit errors trong 5 phút gần đây. Vui lòng kiểm tra kết nối overlay network và log ứng dụng."
+
+      - alert: HAProxyBackendKhongCoServer
+        expr: haproxy_backend_up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "HAProxy {{ $labels.haproxy_target }} - backend {{ $labels.backend }} khong con server hoat dong"
+          description: "HAProxy exporter {{ $labels.service_name }} bao backend {{ $labels.backend }} khong co server nao con UP. Toan bo upstream backend nay dang chet, service dep bang backend nay khong tra loi duoc. Kiem tra ngay cac task upstream tuong ung."
+
+      - alert: HAProxyServerDown
+        expr: haproxy_server_up == 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "HAProxy {{ $labels.haproxy_target }} - upstream {{ $labels.server }} cua backend {{ $labels.backend }} DOWN"
+          description: "Health check tu HAProxy den upstream {{ $labels.server }} trong backend {{ $labels.backend }} khong thanh cong hon 2 phut. Backend van co the con server khac phuc vu; kiem tra service upstream hoac ket noi mang."
+
+      - alert: HAProxyExporterKhongLayDuocStats
+        expr: haproxy_up == 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "haproxy_exporter {{ $labels.haproxy_target }} khong ket noi duoc HAProxy stats"
+          description: "haproxy_exporter {{ $labels.service_name }} khong lay duoc trang stats CSV tu HAProxy trong hon 2 phut. Kiem tra HAProxy service ({{ $labels.haproxy_target }}), overlay network, va thong tin xac thuc HAPROXY_STATS_USER/PASSWORD."
 
       - alert: ContainerRestartFrequently
         expr: sum by (container_label_com_docker_swarm_service_name, instance, nodename, host_ip) (changes(container_start_time_seconds{job="cadvisor", container_label_com_docker_swarm_service_name!="", image!="", container_label_com_docker_swarm_service_name!~".*_(prometheus|alertmanager|cadvisor|node_exporter|blackbox_exporter|postgres_exporter|redis_exporter|prometheus_msteams)$"}[15m])) > 1

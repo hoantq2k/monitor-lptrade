@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
 set -euo pipefail
-
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-
-"$ROOT_DIR/scripts/deploy-common.sh"
+"$ROOT_DIR/scripts/deploy-dmz.sh"

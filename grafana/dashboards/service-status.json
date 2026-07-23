@@ -1,0 +1,396 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Trang thai chi tiet cua tung service qua HAProxy exporter. Import vao Grafana, gan Prometheus datasource khop voi cum (DMZ/MID) tuong ung.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "id": 100,
+      "panels": [],
+      "title": "Summary",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null}
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 1},
+      "id": 1,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value_and_name"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "expr": "count(count by (haproxy_target, backend, server) (haproxy_server_up{cluster=~\"$cluster\"}))",
+          "legendFormat": "Tong upstream server",
+          "refId": "A"
+        }
+      ],
+      "title": "Tong upstream",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null}
+            ]
+          }
+        }
+      },
+      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 1},
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value_and_name"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "expr": "count(haproxy_server_up{cluster=~\"$cluster\"} == 1) or vector(0)",
+          "legendFormat": "Server UP",
+          "refId": "A"
+        }
+      ],
+      "title": "Server UP",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "orange", "value": 1},
+              {"color": "red", "value": 3}
+            ]
+          }
+        }
+      },
+      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 1},
+      "id": 3,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "textMode": "value_and_name"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "expr": "count(haproxy_server_up{cluster=~\"$cluster\"} == 0) or vector(0)",
+          "legendFormat": "Server DOWN",
+          "refId": "A"
+        }
+      ],
+      "title": "Server DOWN",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "red", "value": 1}
+            ]
+          }
+        }
+      },
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 1},
+      "id": 4,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value_and_name"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "expr": "count(haproxy_backend_up{cluster=~\"$cluster\"} == 0) or vector(0)",
+          "legendFormat": "Backend chet hoan toan",
+          "refId": "A"
+        }
+      ],
+      "title": "Backend DOWN 100%",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 5},
+      "id": 101,
+      "title": "Server hien DOWN",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "Danh sach upstream server dang khong hoat dong. Gia tri = 0.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"align": "auto", "cellOptions": {"type": "auto"}, "filterable": true, "inspect": false},
+          "mappings": [{"options": {"0": {"color": "red", "index": 0, "text": "DOWN"}}, "type": "value"}],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}]}
+        },
+        "overrides": [
+          {"matcher": {"id": "byName", "options": "Value"}, "properties": [{"id": "custom.cellOptions", "value": {"mode": "basic", "type": "color-background"}}]}
+        ]
+      },
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 6},
+      "id": 5,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {"countRows": true, "fields": "", "reducer": ["count"], "show": true},
+        "showHeader": true
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "expr": "haproxy_server_up{cluster=~\"$cluster\"} == 0",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Server hien DOWN",
+      "transformations": [
+        {"id": "organize", "options": {"excludeByName": {"Time": true, "__name__": true, "job": true, "instance": true, "service_name": true, "host_ip": true, "nodename": true}, "indexByName": {"cluster": 0, "haproxy_target": 1, "backend": 2, "server": 3, "Value": 4}, "renameByName": {"Value": "Trang thai"}}}
+      ],
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 14},
+      "id": 102,
+      "title": "Timeline trang thai server",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "Mau xanh = server UP, do = DOWN. Filter theo HAProxy target o dropdown tren dashboard.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"fillOpacity": 70, "lineWidth": 0, "spanNulls": false},
+          "mappings": [
+            {"options": {"0": {"color": "red", "index": 0, "text": "DOWN"}}, "type": "value"},
+            {"options": {"1": {"color": "green", "index": 1, "text": "UP"}}, "type": "value"}
+          ],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}]}
+        }
+      },
+      "gridPos": {"h": 12, "w": 24, "x": 0, "y": 15},
+      "id": 6,
+      "options": {
+        "alignValue": "left",
+        "legend": {"displayMode": "list", "placement": "bottom", "showLegend": false},
+        "mergeValues": true,
+        "rowHeight": 0.9,
+        "showValue": "never",
+        "tooltip": {"mode": "single", "sort": "none"}
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "expr": "haproxy_server_up{cluster=~\"$cluster\", haproxy_target=~\"$haproxy_target\"}",
+          "legendFormat": "{{haproxy_target}} / {{backend}} / {{server}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Lich su UP/DOWN cua tung upstream server",
+      "type": "state-timeline"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 27},
+      "id": 103,
+      "title": "% Server UP theo backend",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "Ty le server UP tren tong so server cua tung backend. 100% = tat ca upstream OK. < 100% = co it nhat 1 server DOWN.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "fillOpacity": 20, "lineInterpolation": "stepAfter", "lineWidth": 2, "pointSize": 4, "showPoints": "auto"},
+          "max": 100,
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "orange", "value": 50}, {"color": "green", "value": 100}]},
+          "unit": "percent"
+        }
+      },
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 28},
+      "id": 7,
+      "options": {
+        "legend": {"calcs": ["lastNotNull", "min"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "expr": "100 * sum by (cluster, haproxy_target, backend) (haproxy_server_up{cluster=~\"$cluster\", haproxy_target=~\"$haproxy_target\"}) / count by (cluster, haproxy_target, backend) (haproxy_server_up{cluster=~\"$cluster\", haproxy_target=~\"$haproxy_target\"})",
+          "legendFormat": "{{haproxy_target}} / {{backend}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Ty le upstream UP theo backend",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 38},
+      "id": 104,
+      "title": "So do HAProxy topology (Node Graph)",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "Node Graph tao tu haproxy_server_up: HAProxy target -> backend -> server. Nut do = DOWN, nut xanh = UP. Neu panel bao 'No data' hoac 'Data does not match', kiem tra ten field da khop chuan Node Graph (id/title/source/target).",
+      "gridPos": {"h": 14, "w": 24, "x": 0, "y": 39},
+      "id": 8,
+      "options": {
+        "edges": {},
+        "nodes": {"mainStatUnit": "short"}
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "expr": "haproxy_server_up{cluster=~\"$cluster\", haproxy_target=~\"$haproxy_target\"}",
+          "format": "table",
+          "instant": true,
+          "refId": "servers"
+        }
+      ],
+      "title": "So do topology HAProxy -> backend -> server",
+      "transformations": [
+        {"id": "organize", "options": {"excludeByName": {"Time": true, "__name__": true, "instance": true, "job": true, "service_name": true, "host_ip": true, "nodename": true, "cluster": true}}},
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "id",
+            "mode": "reduceRow",
+            "reduce": {"include": ["haproxy_target", "backend", "server"], "reducer": "allValues"}
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {"server": "title", "backend": "subTitle", "haproxy_target": "detail__haproxy", "Value": "mainStat"}
+          }
+        }
+      ],
+      "type": "nodeGraph"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 37,
+  "style": "dark",
+  "tags": ["swarm", "haproxy", "service-status"],
+  "templating": {
+    "list": [
+      {
+        "current": {"selected": false, "text": "Prometheus", "value": "Prometheus"},
+        "hide": 0,
+        "includeAll": false,
+        "label": "Prometheus datasource",
+        "multi": false,
+        "name": "DS_PROMETHEUS",
+        "options": [],
+        "query": "prometheus",
+        "queryValue": "",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": {"selected": true, "text": ["All"], "value": ["$__all"]},
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "definition": "label_values(haproxy_server_up, cluster)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Cum",
+        "multi": true,
+        "name": "cluster",
+        "options": [],
+        "query": {"query": "label_values(haproxy_server_up, cluster)", "refId": "PrometheusVariableQueryEditor-VariableQuery"},
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {"selected": true, "text": ["All"], "value": ["$__all"]},
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "definition": "label_values(haproxy_server_up{cluster=~\"$cluster\"}, haproxy_target)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "HAProxy target",
+        "multi": true,
+        "name": "haproxy_target",
+        "options": [],
+        "query": {"query": "label_values(haproxy_server_up{cluster=~\"$cluster\"}, haproxy_target)", "refId": "PrometheusVariableQueryEditor-VariableQuery"},
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {"from": "now-6h", "to": "now"},
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Swarm Service Status (HAProxy)",
+  "uid": "swarm-service-status",
+  "version": 1,
+  "weekStart": ""
+}

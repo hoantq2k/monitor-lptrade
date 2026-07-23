@@ -1,0 +1,14 @@
+# Ep line ending LF cho toan bo repo bat ke platform checkout, de bash script
+# va cau hinh YAML chay dung tren Ubuntu Docker Swarm manager.
+* text=auto eol=lf
+
+# Cac file thuc thi tren Linux bat buoc LF; loi CRLF se lam Ubuntu bao
+# `: not found` o dong shebang.
+*.sh text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.sql text eol=lf
+*.md text eol=lf
+.env* text eol=lf
+.gitignore text eol=lf
+.gitattributes text eol=lf

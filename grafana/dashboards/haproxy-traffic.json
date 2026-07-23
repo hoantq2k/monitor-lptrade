@@ -1,0 +1,347 @@
+{
+  "annotations": {"list": []},
+  "description": "Traffic, response code, latency, session cua tung HAProxy backend. Data tu haproxy_exporter.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "id": 100,
+      "title": "Request rate",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "Request per second theo tung backend.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never"},
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "reqps"
+        }
+      },
+      "gridPos": {"h": 10, "w": 12, "x": 0, "y": 1},
+      "id": 1,
+      "options": {
+        "legend": {"calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [{
+        "expr": "sum by (haproxy_target, backend) (rate(haproxy_backend_http_requests_total{cluster=~\"$cluster\", haproxy_target=~\"$haproxy_target\", backend=~\"$backend\"}[1m]))",
+        "legendFormat": "{{haproxy_target}} · {{backend}}",
+        "refId": "A"
+      }],
+      "title": "Request rate per backend",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "Request rate xuong tung upstream server. Xem load balance co deu khong.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "fillOpacity": 5, "lineWidth": 1, "showPoints": "never"},
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "reqps"
+        }
+      },
+      "gridPos": {"h": 10, "w": 12, "x": 12, "y": 1},
+      "id": 2,
+      "options": {
+        "legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [{
+        "expr": "rate(haproxy_server_http_responses_total{cluster=~\"$cluster\", haproxy_target=~\"$haproxy_target\", backend=~\"$backend\"}[1m])",
+        "legendFormat": "{{backend}} · {{server}} · {{code}}",
+        "refId": "A"
+      }],
+      "title": "Response rate per server",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 11},
+      "id": 101,
+      "title": "Response codes",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "Response codes theo class (2xx/3xx/4xx/5xx) tren tung backend.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "fillOpacity": 30, "lineWidth": 1, "showPoints": "never", "stacking": {"mode": "normal"}},
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "reqps"
+        },
+        "overrides": [
+          {"matcher": {"id": "byRegexp", "options": ".*5xx.*"}, "properties": [{"id": "color", "value": {"fixedColor": "red", "mode": "fixed"}}]},
+          {"matcher": {"id": "byRegexp", "options": ".*4xx.*"}, "properties": [{"id": "color", "value": {"fixedColor": "orange", "mode": "fixed"}}]},
+          {"matcher": {"id": "byRegexp", "options": ".*3xx.*"}, "properties": [{"id": "color", "value": {"fixedColor": "blue", "mode": "fixed"}}]},
+          {"matcher": {"id": "byRegexp", "options": ".*2xx.*"}, "properties": [{"id": "color", "value": {"fixedColor": "green", "mode": "fixed"}}]}
+        ]
+      },
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 12},
+      "id": 3,
+      "options": {
+        "legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [{
+        "expr": "sum by (haproxy_target, backend, code) (rate(haproxy_backend_http_responses_total{cluster=~\"$cluster\", haproxy_target=~\"$haproxy_target\", backend=~\"$backend\"}[1m]))",
+        "legendFormat": "{{haproxy_target}} · {{backend}} · {{code}}",
+        "refId": "A"
+      }],
+      "title": "Response codes theo backend",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "% loi (4xx + 5xx / tong).",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "fillOpacity": 15, "lineWidth": 2, "showPoints": "never"},
+          "max": 100,
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 1}, {"color": "red", "value": 5}]},
+          "unit": "percent"
+        }
+      },
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 22},
+      "id": 4,
+      "options": {
+        "legend": {"calcs": ["max", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [{
+        "expr": "100 * sum by (haproxy_target, backend) (rate(haproxy_backend_http_responses_total{cluster=~\"$cluster\", haproxy_target=~\"$haproxy_target\", backend=~\"$backend\", code=~\"4xx|5xx\"}[5m])) / sum by (haproxy_target, backend) (rate(haproxy_backend_http_responses_total{cluster=~\"$cluster\", haproxy_target=~\"$haproxy_target\", backend=~\"$backend\"}[5m]))",
+        "legendFormat": "{{haproxy_target}} · {{backend}}",
+        "refId": "A"
+      }],
+      "title": "% error responses (4xx + 5xx)",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 30},
+      "id": 102,
+      "title": "Latency",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "Response time trung binh tu HAProxy (haproxy_backend_response_time_average_seconds).",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never"},
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 0.5}, {"color": "red", "value": 2}]},
+          "unit": "s"
+        }
+      },
+      "gridPos": {"h": 10, "w": 12, "x": 0, "y": 31},
+      "id": 5,
+      "options": {
+        "legend": {"calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [{
+        "expr": "haproxy_backend_response_time_average_seconds{cluster=~\"$cluster\", haproxy_target=~\"$haproxy_target\", backend=~\"$backend\"}",
+        "legendFormat": "{{haproxy_target}} · {{backend}}",
+        "refId": "A"
+      }],
+      "title": "Response time avg (per backend)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "Queue time avg. Cao = HAProxy dang xep hang cho backend co san server.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never"},
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 0.1}, {"color": "red", "value": 1}]},
+          "unit": "s"
+        }
+      },
+      "gridPos": {"h": 10, "w": 12, "x": 12, "y": 31},
+      "id": 6,
+      "options": {
+        "legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [{
+        "expr": "haproxy_backend_queue_time_average_seconds{cluster=~\"$cluster\", haproxy_target=~\"$haproxy_target\", backend=~\"$backend\"}",
+        "legendFormat": "{{haproxy_target}} · {{backend}}",
+        "refId": "A"
+      }],
+      "title": "Queue time avg",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 41},
+      "id": 103,
+      "title": "Sessions & connections",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "Session hien tai tren tung backend.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never"},
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "short"
+        }
+      },
+      "gridPos": {"h": 10, "w": 12, "x": 0, "y": 42},
+      "id": 7,
+      "options": {
+        "legend": {"calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [{
+        "expr": "haproxy_backend_current_sessions{cluster=~\"$cluster\", haproxy_target=~\"$haproxy_target\", backend=~\"$backend\"}",
+        "legendFormat": "{{haproxy_target}} · {{backend}}",
+        "refId": "A"
+      }],
+      "title": "Current sessions per backend",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "Queue length: request cho backend nhung khong con server tro cap.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "fillOpacity": 20, "lineWidth": 2, "showPoints": "never"},
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 1}, {"color": "red", "value": 10}]},
+          "unit": "short"
+        }
+      },
+      "gridPos": {"h": 10, "w": 12, "x": 12, "y": 42},
+      "id": 8,
+      "options": {
+        "legend": {"calcs": ["max", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [{
+        "expr": "haproxy_backend_current_queue{cluster=~\"$cluster\", haproxy_target=~\"$haproxy_target\", backend=~\"$backend\"}",
+        "legendFormat": "{{haproxy_target}} · {{backend}}",
+        "refId": "A"
+      }],
+      "title": "Backend queue depth",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 52},
+      "id": 104,
+      "title": "Bytes & connections",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "Bytes in/out qua backend.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never"},
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "Bps"
+        }
+      },
+      "gridPos": {"h": 9, "w": 24, "x": 0, "y": 53},
+      "id": 9,
+      "options": {
+        "legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {"expr": "sum by (haproxy_target, backend) (rate(haproxy_backend_bytes_in_total{cluster=~\"$cluster\", haproxy_target=~\"$haproxy_target\", backend=~\"$backend\"}[5m]))", "legendFormat": "{{haproxy_target}} · {{backend}} · IN", "refId": "A"},
+        {"expr": "sum by (haproxy_target, backend) (rate(haproxy_backend_bytes_out_total{cluster=~\"$cluster\", haproxy_target=~\"$haproxy_target\", backend=~\"$backend\"}[5m]))", "legendFormat": "{{haproxy_target}} · {{backend}} · OUT", "refId": "B"}
+      ],
+      "title": "Bytes in/out per backend",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 37,
+  "style": "dark",
+  "tags": ["swarm", "haproxy", "traffic"],
+  "templating": {
+    "list": [
+      {
+        "current": {"selected": false, "text": "Prometheus", "value": "Prometheus"},
+        "hide": 0,
+        "includeAll": false,
+        "label": "Prometheus datasource",
+        "multi": false,
+        "name": "DS_PROMETHEUS",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "type": "datasource"
+      },
+      {
+        "current": {"selected": true, "text": ["All"], "value": ["$__all"]},
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "definition": "label_values(haproxy_backend_up, cluster)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Cum",
+        "multi": true,
+        "name": "cluster",
+        "query": {"query": "label_values(haproxy_backend_up, cluster)", "refId": "PrometheusVariableQueryEditor-VariableQuery"},
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {"selected": true, "text": ["All"], "value": ["$__all"]},
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "definition": "label_values(haproxy_backend_up{cluster=~\"$cluster\"}, haproxy_target)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "HAProxy target",
+        "multi": true,
+        "name": "haproxy_target",
+        "query": {"query": "label_values(haproxy_backend_up{cluster=~\"$cluster\"}, haproxy_target)", "refId": "PrometheusVariableQueryEditor-VariableQuery"},
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {"selected": true, "text": ["All"], "value": ["$__all"]},
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "definition": "label_values(haproxy_backend_up{cluster=~\"$cluster\", haproxy_target=~\"$haproxy_target\"}, backend)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Backend",
+        "multi": true,
+        "name": "backend",
+        "query": {"query": "label_values(haproxy_backend_up{cluster=~\"$cluster\", haproxy_target=~\"$haproxy_target\"}, backend)", "refId": "PrometheusVariableQueryEditor-VariableQuery"},
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {"from": "now-1h", "to": "now"},
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "HAProxy Traffic & Latency",
+  "uid": "swarm-haproxy-traffic",
+  "version": 1,
+  "weekStart": ""
+}
